@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model Mapping — AI Model Guide for Change Management</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d29;
+    --accent: #6c8cff;
+    --good: #4ade80;
+    --warn: #fbbf24;
+    --bad: #f87171;
+    --text: #e6e8ef;
+    --text-dim: #9aa0b4;
+    --border: #2a2e3d;
+
+    /* Category colors (OCM-focused) */
+    --cat-stakeholder: #34d399;
+    --cat-comms: #f472b6;
+    --cat-resistance: #a78bfa;
+    --cat-training: #60a5fa;
+    --cat-sponsor: #fbbf24;
+    --cat-feedback: #22d3ee;
+    --cat-general: #9aa0b4;
+    --cat-default: #9aa0b4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .subtitle { color: var(--text-dim); margin-bottom: 20px; font-size: 14px; }
+  h2 { font-size: 16px; margin-bottom: 10px; }
+
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 18px;
+  }
+  .section-models { border-top-color: var(--cat-research); }
+  .section-prompts { border-top-color: var(--cat-writing); }
+  .section-log { border-top-color: var(--cat-coding); }
+  .section-matrix { border-top-color: var(--cat-reasoning); }
+  .section-profiles { border-top-color: var(--cat-summarizing); }
+  .section-guide { border-top-color: var(--cat-creative); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .three-col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 800px) {
+    .two-col, .three-col { grid-template-columns: 1fr; }
+  }
+
+  label { font-size: 13px; color: var(--text-dim); display: block; margin-bottom: 4px; }
+  input[type=text], input[type=number], textarea, select {
+    width: 100%;
+    background: #11141d;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+
+  .form-row { margin-bottom: 12px; }
+
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { opacity: 0.9; }
+  button.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  button.danger {
+    background: transparent;
+    border: 1px solid var(--bad);
+    color: var(--bad);
+  }
+  .row { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+
+  .chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-dim);
+    user-select: none;
+  }
+  .chip.active {
+    border-color: var(--accent);
+    color: var(--text);
+    background: rgba(108,140,255,0.15);
+  }
+
+  /* Model cards */
+  .model-card, .prompt-card {
+    background: #11141d;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--model-color, var(--accent));
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .model-card .name { font-weight: 600; }
+  .model-card .meta { font-size: 12px; color: var(--text-dim); }
+  .swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .cat-tag {
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #0f1117;
+    background: var(--cat-color, var(--cat-default));
+    display: inline-block;
+  }
+
+  /* Comparison matrix */
+  .matrix-wrap { overflow-x: auto; }
+  .matrix-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+  .matrix-table th, .matrix-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .matrix-table th { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+  .matrix-table tr:last-child td { border-bottom: none; }
+  .score-cell {
+    border-radius: 6px;
+    padding: 4px 8px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .score-empty { color: var(--text-dim); font-size: 12px; text-align: center; }
+
+  /* Profile cards */
+  .profile-card {
+    background: #11141d;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--model-color, var(--accent));
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .profile-card .name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+  .profile-card .provider { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
+  .profile-stat { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px solid var(--border); }
+  .profile-stat:last-of-type { border-bottom: none; }
+  .profile-stat .v { font-weight: 700; }
+  .tag-pill {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(108,140,255,0.15);
+    color: var(--accent);
+    margin: 4px 4px 0 0;
+  }
+
+  /* Insight / guide cards */
+  .insight {
+    background: #11141d;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .insight .insight-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #0f1117;
+    background: var(--accent);
+    margin-right: 8px;
+  }
+  .empty-msg { color: var(--text-dim); font-size: 13px; padding: 8px 0; }
+
+  .small-text { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+
+  /* History / log table */
+  .log-table-wrap { overflow-x: auto; }
+  .log-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 700px; }
+  .log-table th, .log-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .log-table th { color: var(--text-dim); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+
+<h1>Model Mapping</h1>
+<div class="subtitle">Your personal AI model guide for change management work — test models against the same OCM prompts (stakeholder analysis, change comms, resistance planning, training content), track response time, accuracy and style, and build a decision tree for which tool to reach for on which kind of task.</div>
+
+<!-- Models -->
+<div class="section section-models">
+  <h2>Your models</h2>
+  <div class="two-col">
+    <div class="form-row">
+      <label for="modelName">Model name</label>
+      <input type="text" id="modelName" placeholder="e.g. Claude Sonnet 4.6">
+    </div>
+    <div class="form-row">
+      <label for="modelProvider">Provider</label>
+      <input type="text" id="modelProvider" placeholder="e.g. Anthropic">
+    </div>
+  </div>
+  <button onclick="addModel()">Add model</button>
+  <div id="modelList" style="margin-top:12px;"></div>
+</div>
+
+<!-- Prompts -->
+<div class="section section-prompts">
+  <h2>Test prompts</h2>
+  <div class="form-row">
+    <label for="promptText">Prompt</label>
+    <textarea id="promptText" placeholder="e.g. 'Refactor this function to be more readable: ...'"></textarea>
+  </div>
+  <div class="form-row">
+    <label for="promptCategory">Category</label>
+    <select id="promptCategory">
+      <option value="Stakeholder analysis">Stakeholder analysis</option>
+      <option value="Change comms">Change comms</option>
+      <option value="Resistance & risk">Resistance & risk</option>
+      <option value="Training & enablement">Training & enablement</option>
+      <option value="Sponsor messaging">Sponsor messaging</option>
+      <option value="Feedback analysis">Feedback analysis</option>
+      <option value="General">General</option>
+    </select>
+  </div>
+  <button onclick="addPrompt()">Add prompt</button>
+  <div class="small-text" style="margin-top:10px;">Quick-add a common OCM prompt:</div>
+  <div class="chip-row" id="suggestedPrompts"></div>
+  <div id="promptList" style="margin-top:12px;"></div>
+</div>
+
+<!-- Log a result -->
+<div class="section section-log">
+  <h2>Log a test result</h2>
+  <div class="two-col">
+    <div class="form-row">
+      <label for="logModel">Model</label>
+      <select id="logModel"></select>
+    </div>
+    <div class="form-row">
+      <label for="logPrompt">Prompt</label>
+      <select id="logPrompt"></select>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="form-row">
+      <label for="logTime">Response time (seconds)</label>
+      <input type="number" id="logTime" min="0" step="0.1" placeholder="e.g. 4.5">
+    </div>
+    <div class="form-row">
+      <label for="logAccuracy">Accuracy / quality (1-5)</label>
+      <input type="number" id="logAccuracy" min="1" max="5" step="1" placeholder="e.g. 4">
+    </div>
+  </div>
+  <div class="form-row">
+    <label>Style (pick what fits)</label>
+    <div class="chip-row" id="styleChips"></div>
+  </div>
+  <div class="form-row">
+    <label for="logNotes">Notes</label>
+    <textarea id="logNotes" placeholder="Anything notable about this response — tone, errors, formatting, etc."></textarea>
+  </div>
+  <button onclick="addResult()">Log result</button>
+  <div class="log-table-wrap" style="margin-top:12px;">
+    <table class="log-table">
+      <thead>
+        <tr><th>Date</th><th>Model</th><th>Prompt</th><th>Time (s)</th><th>Score</th><th>Style</th><th>Notes</th><th></th></tr>
+      </thead>
+      <tbody id="logTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Comparison matrix -->
+<div class="section section-matrix">
+  <h2>Comparison matrix</h2>
+  <div class="small-text" style="margin-bottom:8px;">Average accuracy score (1-5) for each model against each prompt. Darker green = stronger.</div>
+  <div class="matrix-wrap">
+    <table class="matrix-table" id="matrixTable"></table>
+  </div>
+</div>
+
+<!-- Model profiles -->
+<div class="section section-profiles">
+  <h2>Model profiles</h2>
+  <div class="three-col" id="profileGrid"></div>
+</div>
+
+<!-- Decision guide -->
+<div class="section section-guide">
+  <h2>Decision guide</h2>
+  <div id="guideList"></div>
+</div>
+
+<div class="row">
+  <button class="secondary" onclick="exportData()">Export data</button>
+  <button class="secondary" onclick="document.getElementById('importFile').click()">Import data</button>
+  <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+  <button class="danger" onclick="resetData()">Reset all data</button>
+</div>
+
+<script>
+const STORAGE_KEY = 'modelMappingData_v1';
+const MODEL_PALETTE = ['#6c8cff', '#34d399', '#f472b6', '#fbbf24', '#a78bfa', '#22d3ee', '#f87171', '#60a5fa'];
+const STYLE_TAGS = ['Concise', 'Verbose', 'Creative', 'Technical', 'Cautious', 'Fast', 'Accurate', 'Conversational'];
+const CATEGORY_COLOR_VAR = {
+  'Stakeholder analysis': '--cat-stakeholder',
+  'Change comms': '--cat-comms',
+  'Resistance & risk': '--cat-resistance',
+  'Training & enablement': '--cat-training',
+  'Sponsor messaging': '--cat-sponsor',
+  'Feedback analysis': '--cat-feedback',
+  'General': '--cat-general'
+};
+
+const SUGGESTED_PROMPTS = [
+  { text: 'Summarize this stakeholder interview transcript and identify their top concerns about the change.', category: 'Stakeholder analysis' },
+  { text: "Draft a 150-word announcement explaining why we're making this change, written for frontline staff (not executives).", category: 'Change comms' },
+  { text: 'Based on these survey comments, identify the top 3 sources of resistance and suggest a mitigation for each.', category: 'Resistance & risk' },
+  { text: 'Turn this process document into a 5-step quick-reference guide for end users.', category: 'Training & enablement' },
+  { text: 'Write talking points for an executive sponsor to use in a town hall to address concerns about job security during this change.', category: 'Sponsor messaging' },
+  { text: 'Cluster these open-ended feedback responses into themes and rank them by frequency.', category: 'Feedback analysis' },
+  { text: 'Create a RACI matrix for this change initiative based on the roles described below.', category: 'Stakeholder analysis' },
+  { text: 'Rewrite this change update so it reads as a peer story rather than a top-down memo.', category: 'Change comms' }
+];
+
+let state = { models: [], prompts: [], results: [] };
+let selectedStyles = [];
+
+function loadData() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      state.models = parsed.models || [];
+      state.prompts = parsed.prompts || [];
+      state.results = parsed.results || [];
+    } catch (e) { /* ignore corrupt data */ }
+  }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+
+function uid(prefix) {
+  return prefix + '_' + Math.random().toString(36).slice(2, 10);
+}
+
+function categoryColorVar(cat) {
+  return `var(${CATEGORY_COLOR_VAR[cat] || '--cat-default'})`;
+}
+
+/* ---------- Models ---------- */
+function addModel() {
+  const name = document.getElementById('modelName').value.trim();
+  const provider = document.getElementById('modelProvider').value.trim();
+  if (!name) return;
+  const color = MODEL_PALETTE[state.models.length % MODEL_PALETTE.length];
+  state.models.push({ id: uid('model'), name, provider, color });
+  document.getElementById('modelName').value = '';
+  document.getElementById('modelProvider').value = '';
+  saveData();
+  renderAll();
+}
+
+function removeModel(id) {
+  state.models = state.models.filter(m => m.id !== id);
+  state.results = state.results.filter(r => r.modelId !== id);
+  saveData();
+  renderAll();
+}
+
+function renderModelList() {
+  const el = document.getElementById('modelList');
+  if (!state.models.length) {
+    el.innerHTML = '<div class="empty-msg">No models yet. Add a few — e.g. Claude, GPT-4, Gemini, Llama, Mistral.</div>';
+    return;
+  }
+  el.innerHTML = state.models.map(m => `
+    <div class="model-card" style="--model-color:${m.color}">
+      <div>
+        <span class="swatch" style="background:${m.color}"></span>
+        <span class="name">${escapeHtml(m.name)}</span>
+        <span class="meta">${m.provider ? '— ' + escapeHtml(m.provider) : ''}</span>
+      </div>
+      <button class="danger" onclick="removeModel('${m.id}')">Remove</button>
+    </div>
+  `).join('');
+}
+
+/* ---------- Prompts ---------- */
+function addPrompt() {
+  const text = document.getElementById('promptText').value.trim();
+  const category = document.getElementById('promptCategory').value;
+  if (!text) return;
+  state.prompts.push({ id: uid('prompt'), text, category });
+  document.getElementById('promptText').value = '';
+  saveData();
+  renderAll();
+}
+
+function removePrompt(id) {
+  state.prompts = state.prompts.filter(p => p.id !== id);
+  state.results = state.results.filter(r => r.promptId !== id);
+  saveData();
+  renderAll();
+}
+
+function addSuggestedPrompt(index) {
+  const suggestion = SUGGESTED_PROMPTS[index];
+  if (!suggestion) return;
+  state.prompts.push({ id: uid('prompt'), text: suggestion.text, category: suggestion.category });
+  saveData();
+  renderAll();
+}
+
+function renderSuggestedPrompts() {
+  const el = document.getElementById('suggestedPrompts');
+  el.innerHTML = SUGGESTED_PROMPTS.map((s, i) => `
+    <div class="chip" onclick="addSuggestedPrompt(${i})" title="${escapeHtml(s.text)}">
+      <span class="cat-tag" style="--cat-color:${categoryColorVar(s.category)}">${escapeHtml(s.category)}</span>
+      ${escapeHtml(s.text.slice(0, 36))}${s.text.length > 36 ? '…' : ''}
+    </div>
+  `).join('');
+}
+
+function renderPromptList() {
+  const el = document.getElementById('promptList');
+  if (!state.prompts.length) {
+    el.innerHTML = '<div class="empty-msg">No prompts yet. Add a prompt and run it through each model.</div>';
+    return;
+  }
+  el.innerHTML = state.prompts.map(p => `
+    <div class="prompt-card">
+      <div>
+        <span class="cat-tag" style="--cat-color:${categoryColorVar(p.category)}">${escapeHtml(p.category)}</span>
+        <div style="margin-top:4px;">${escapeHtml(p.text)}</div>
+      </div>
+      <button class="danger" onclick="removePrompt('${p.id}')">Remove</button>
+    </div>
+  `).join('');
+}
+
+/* ---------- Style chips ---------- */
+function renderStyleChips() {
+  const el = document.getElementById('styleChips');
+  el.innerHTML = STYLE_TAGS.map(tag => `
+    <div class="chip ${selectedStyles.includes(tag) ? 'active' : ''}" onclick="toggleStyle('${tag}')">${tag}</div>
+  `).join('');
+}
+
+function toggleStyle(tag) {
+  if (selectedStyles.includes(tag)) {
+    selectedStyles = selectedStyles.filter(t => t !== tag);
+  } else {
+    selectedStyles.push(tag);
+  }
+  renderStyleChips();
+}
+
+/* ---------- Results log ---------- */
+function renderLogSelects() {
+  const modelSel = document.getElementById('logModel');
+  const promptSel = document.getElementById('logPrompt');
+  modelSel.innerHTML = state.models.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')
+    || '<option value="">Add a model first</option>';
+  promptSel.innerHTML = state.prompts.map(p => `<option value="${p.id}">${escapeHtml(p.text.slice(0, 60))}${p.text.length > 60 ? '…' : ''}</option>`).join('')
+    || '<option value="">Add a prompt first</option>';
+}
+
+function addResult() {
+  const modelId = document.getElementById('logModel').value;
+  const promptId = document.getElementById('logPrompt').value;
+  const time = parseFloat(document.getElementById('logTime').value);
+  const accuracy = parseInt(document.getElementById('logAccuracy').value, 10);
+  const notes = document.getElementById('logNotes').value.trim();
+  if (!modelId || !promptId || !accuracy || accuracy < 1 || accuracy > 5) return;
+
+  state.results.push({
+    id: uid('result'),
+    modelId, promptId,
+    time: isNaN(time) ? null : time,
+    accuracy,
+    style: [...selectedStyles],
+    notes,
+    date: new Date().toISOString()
+  });
+
+  document.getElementById('logTime').value = '';
+  document.getElementById('logAccuracy').value = '';
+  document.getElementById('logNotes').value = '';
+  selectedStyles = [];
+  renderStyleChips();
+  saveData();
+  renderAll();
+}
+
+function removeResult(id) {
+  state.results = state.results.filter(r => r.id !== id);
+  saveData();
+  renderAll();
+}
+
+function renderLogTable() {
+  const body = document.getElementById('logTableBody');
+  if (!state.results.length) {
+    body.innerHTML = '<tr><td colspan="8" class="empty-msg">No test results logged yet.</td></tr>';
+    return;
+  }
+  const sorted = [...state.results].sort((a, b) => new Date(b.date) - new Date(a.date));
+  body.innerHTML = sorted.map(r => {
+    const model = state.models.find(m => m.id === r.modelId);
+    const prompt = state.prompts.find(p => p.id === r.promptId);
+    const dateStr = new Date(r.date).toLocaleDateString();
+    return `<tr>
+      <td>${dateStr}</td>
+      <td>${model ? `<span class="swatch" style="background:${model.color}"></span>${escapeHtml(model.name)}` : '—'}</td>
+      <td>${prompt ? escapeHtml(prompt.text.slice(0, 40)) + (prompt.text.length > 40 ? '…' : '') : '—'}</td>
+      <td>${r.time != null ? r.time + 's' : '—'}</td>
+      <td>${r.accuracy}/5</td>
+      <td>${(r.style || []).map(s => `<span class="tag-pill">${escapeHtml(s)}</span>`).join('')}</td>
+      <td>${escapeHtml(r.notes || '')}</td>
+      <td><button class="danger" onclick="removeResult('${r.id}')">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---------- Comparison matrix ---------- */
+function scoreColor(avg) {
+  if (avg == null) return null;
+  if (avg >= 4.5) return '#15803d';
+  if (avg >= 3.5) return '#22c55e';
+  if (avg >= 2.5) return '#a3a31a';
+  if (avg >= 1.5) return '#d97706';
+  return '#dc2626';
+}
+
+function renderMatrix() {
+  const table = document.getElementById('matrixTable');
+  if (!state.models.length || !state.prompts.length) {
+    table.innerHTML = '<tr><td class="empty-msg">Add at least one model and one prompt, then log results to populate the matrix.</td></tr>';
+    return;
+  }
+  let html = '<thead><tr><th>Prompt</th>' + state.models.map(m =>
+    `<th><span class="swatch" style="background:${m.color}"></span>${escapeHtml(m.name)}</th>`
+  ).join('') + '</tr></thead><tbody>';
+
+  for (const p of state.prompts) {
+    html += `<tr><td><span class="cat-tag" style="--cat-color:${categoryColorVar(p.category)}">${escapeHtml(p.category)}</span><br>${escapeHtml(p.text.slice(0, 50))}${p.text.length > 50 ? '…' : ''}</td>`;
+    for (const m of state.models) {
+      const matches = state.results.filter(r => r.modelId === m.id && r.promptId === p.id);
+      if (!matches.length) {
+        html += '<td><div class="score-empty">—</div></td>';
+      } else {
+        const avg = matches.reduce((s, r) => s + r.accuracy, 0) / matches.length;
+        html += `<td><div class="score-cell" style="background:${scoreColor(avg)};color:#fff">${avg.toFixed(1)}</div></td>`;
+      }
+    }
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+/* ---------- Model profiles ---------- */
+function renderProfiles() {
+  const grid = document.getElementById('profileGrid');
+  if (!state.models.length) {
+    grid.innerHTML = '<div class="empty-msg">No models yet.</div>';
+    return;
+  }
+  grid.innerHTML = state.models.map(m => {
+    const results = state.results.filter(r => r.modelId === m.id);
+    const avgAccuracy = results.length ? (results.reduce((s, r) => s + r.accuracy, 0) / results.length).toFixed(1) : '—';
+    const timed = results.filter(r => r.time != null);
+    const avgTime = timed.length ? (timed.reduce((s, r) => s + r.time, 0) / timed.length).toFixed(1) + 's' : '—';
+
+    const styleCounts = {};
+    results.forEach(r => (r.style || []).forEach(s => styleCounts[s] = (styleCounts[s] || 0) + 1));
+    const topStyles = Object.entries(styleCounts).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([s]) => s);
+
+    return `<div class="profile-card" style="--model-color:${m.color}">
+      <div class="name"><span class="swatch" style="background:${m.color}"></span>${escapeHtml(m.name)}</div>
+      <div class="provider">${escapeHtml(m.provider || 'Provider not set')}</div>
+      <div class="profile-stat"><span>Avg accuracy</span><span class="v">${avgAccuracy}${avgAccuracy !== '—' ? '/5' : ''}</span></div>
+      <div class="profile-stat"><span>Avg response time</span><span class="v">${avgTime}</span></div>
+      <div class="profile-stat"><span>Tests logged</span><span class="v">${results.length}</span></div>
+      ${topStyles.length ? `<div style="margin-top:6px;">${topStyles.map(s => `<span class="tag-pill">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ---------- Decision guide ---------- */
+function renderGuide() {
+  const el = document.getElementById('guideList');
+  const insights = [];
+
+  // Per-category recommendation: best avg accuracy
+  const categories = [...new Set(state.prompts.map(p => p.category))];
+  for (const cat of categories) {
+    const promptIds = state.prompts.filter(p => p.category === cat).map(p => p.id);
+    const byModel = {};
+    state.results.filter(r => promptIds.includes(r.promptId)).forEach(r => {
+      if (!byModel[r.modelId]) byModel[r.modelId] = [];
+      byModel[r.modelId].push(r);
+    });
+    const ranked = Object.entries(byModel).map(([modelId, results]) => {
+      const avg = results.reduce((s, r) => s + r.accuracy, 0) / results.length;
+      const styleCounts = {};
+      results.forEach(r => (r.style || []).forEach(s => styleCounts[s] = (styleCounts[s] || 0) + 1));
+      const topStyle = Object.entries(styleCounts).sort((a, b) => b[1] - a[1])[0];
+      return { modelId, avg, count: results.length, topStyle: topStyle ? topStyle[0] : null };
+    }).sort((a, b) => b.avg - a.avg);
+
+    if (ranked.length) {
+      const best = ranked[0];
+      const model = state.models.find(m => m.id === best.modelId);
+      if (model) {
+        const styleNote = best.topStyle ? ` Tends to be ${best.topStyle.toLowerCase()} for this kind of task.` : '';
+        insights.push({
+          color: model.color,
+          tag: cat,
+          html: `For <b>${escapeHtml(cat)}</b> tasks, <b>${escapeHtml(model.name)}</b> has scored highest so far (avg ${best.avg.toFixed(1)}/5 across ${best.count} test${best.count === 1 ? '' : 's'}).${styleNote}`
+        });
+      }
+    }
+  }
+
+  // Fastest model overall
+  const timed = state.results.filter(r => r.time != null);
+  if (timed.length) {
+    const byModel = {};
+    timed.forEach(r => {
+      if (!byModel[r.modelId]) byModel[r.modelId] = [];
+      byModel[r.modelId].push(r.time);
+    });
+    const ranked = Object.entries(byModel).map(([modelId, times]) => ({
+      modelId, avg: times.reduce((a, b) => a + b, 0) / times.length
+    })).sort((a, b) => a.avg - b.avg);
+    const fastest = ranked[0];
+    const model = state.models.find(m => m.id === fastest.modelId);
+    if (model) {
+      insights.push({
+        color: model.color,
+        tag: 'Speed',
+        html: `<b>${escapeHtml(model.name)}</b> is your fastest model so far, averaging ${fastest.avg.toFixed(1)}s per response. Good default for quick iteration or low-stakes drafts.`
+      });
+    }
+  }
+
+  if (!insights.length) {
+    el.innerHTML = '<div class="empty-msg">Log a few test results across models and prompt categories to build your decision guide.</div>';
+    return;
+  }
+
+  el.innerHTML = insights.map(i => `
+    <div class="insight" style="border-left-color:${i.color}">
+      <span class="insight-tag" style="background:${i.color}">${escapeHtml(i.tag)}</span>${i.html}
+    </div>
+  `).join('');
+}
+
+/* ---------- Export / Import / Reset ---------- */
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'model-mapping-data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      state.models = parsed.models || [];
+      state.prompts = parsed.prompts || [];
+      state.results = parsed.results || [];
+      saveData();
+      renderAll();
+    } catch (err) {
+      alert('Could not read that file as valid Model Mapping data.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function resetData() {
+  if (!confirm('This will permanently delete all models, prompts and test results. Continue?')) return;
+  state = { models: [], prompts: [], results: [] };
+  selectedStyles = [];
+  saveData();
+  renderAll();
+}
+
+/* ---------- Render all ---------- */
+function renderAll() {
+  renderModelList();
+  renderSuggestedPrompts();
+  renderPromptList();
+  renderStyleChips();
+  renderLogSelects();
+  renderLogTable();
+  renderMatrix();
+  renderProfiles();
+  renderGuide();
+}
+
+loadData();
+renderAll();
+</script>
+</body>
+</html>
